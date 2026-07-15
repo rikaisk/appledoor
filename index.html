@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CASE FILE - X 언급 사건</title>
+  <style>
+    :root {
+      --paper: #fff8e8;
+      --paper-deep: #f4e3c1;
+      --ink: #34231c;
+      --muted: #7a6356;
+      --brown: #4b2c22;
+      --burgundy: #7e1f2b;
+      --red: #b62b2f;
+      --gold: #d2a24b;
+      --cream: #fffdf6;
+      --line: rgba(75, 44, 34, .18);
+      --shadow: 0 24px 70px rgba(55, 31, 21, .22);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      color: var(--ink);
+      font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+      line-height: 1.7;
+      background:
+        linear-gradient(90deg, rgba(126,31,43,.05) 1px, transparent 1px),
+        linear-gradient(rgba(126,31,43,.05) 1px, transparent 1px),
+        radial-gradient(circle at 20% 8%, rgba(178, 43, 47, .16), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(210, 162, 75, .22), transparent 27%),
+        linear-gradient(145deg, #ead1a7, #fbefd4 48%, #cda777);
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+      border: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(100%, 430px);
+      min-height: min(760px, calc(100vh - 32px));
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .case-card {
+      position: relative;
+      width: 100%;
+      min-height: 640px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,.65);
+      border-radius: 28px;
+      background: rgba(255, 248, 232, .88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .case-card::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1px dashed rgba(126,31,43,.2);
+      border-radius: 22px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .case-card::after {
+      content: "CONFIDENTIAL";
+      position: absolute;
+      right: -42px;
+      top: 94px;
+      transform: rotate(28deg);
+      color: rgba(126,31,43,.07);
+      font: 900 32px/1 Georgia, serif;
+      letter-spacing: 3px;
+      pointer-events: none;
+    }
+
+    .topbar {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 2px 2px 10px;
+      z-index: 2;
+    }
+
+    .back-btn {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--brown);
+      background: #fff5dc;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 18px rgba(75,44,34,.1);
+      transition: transform .2s ease, opacity .2s ease;
+    }
+
+    .back-btn:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .back-btn:active { transform: scale(.94); }
+
+    .case-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+
+    .dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-width: 180px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(75,44,34,.22);
+      transition: width .25s ease, background .25s ease;
+    }
+
+    .dot.active {
+      width: 18px;
+      border-radius: 999px;
+      background: var(--burgundy);
+    }
+
+    .paper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 26px 20px 20px;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(126,31,43,.045) 1px, transparent 1px) 0 0/24px 24px,
+        linear-gradient(var(--cream), var(--paper));
+      border: 1px solid rgba(75,44,34,.2);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.65),
+        0 14px 26px rgba(75,44,34,.12);
+      overflow: hidden;
+    }
+
+    .paper.flip {
+      animation: pageFlip .48s ease both;
+    }
+
+    .scene {
+      display: none;
+      min-height: 100%;
+      flex: 1;
+    }
+
+    .scene.active {
+      display: flex;
+      flex-direction: column;
+      animation: sceneIn .42s ease both;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      gap: 7px;
+      margin-bottom: 10px;
+      padding: 5px 9px;
+      border: 1px solid rgba(126,31,43,.2);
+      border-radius: 999px;
+      color: var(--burgundy);
+      background: rgba(255,255,255,.55);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+    }
+
+    .kicker::before {
+      content: "!";
+      width: 17px;
+      height: 17px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff8e8;
+      background: var(--red);
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      color: var(--brown);
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font: 900 clamp(42px, 13vw, 64px)/.92 Georgia, "Times New Roman", serif;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(25px, 7vw, 34px);
+      line-height: 1.18;
+    }
+
+    .type-title {
+      font-family: "Courier New", "Malgun Gothic", monospace;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+      word-break: keep-all;
+    }
+
+    .content {
+      margin-top: 22px;
+      flex: 1;
+    }
+
+    .file-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 10px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.52);
+    }
+
+    .file-row dt {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .file-row dd {
+      margin: 0;
+      color: var(--brown);
+      font-weight: 900;
+    }
+
+    .note {
+      margin: 18px 0 0;
+      padding: 14px;
+      border-left: 4px solid var(--burgundy);
+      border-radius: 12px;
+      background: rgba(126,31,43,.07);
+      color: #563a31;
+      font-weight: 700;
+      word-break: keep-all;
+    }
+
+    .body-copy {
+      margin: 0;
+      color: #493127;
+      font-size: 16px;
+      font-weight: 650;
+      white-space: pre-line;
+      word-break: keep-all;
+    }
+
+    .status-list,
+    .check-list,
+    .charge-list,
+    .order-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .status-list li,
+    .check-list li,
+    .charge-list li,
+    .order-list li {
+      position: relative;
+      padding: 12px 12px 12px 42px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,255,255,.52);
+      font-weight: 750;
+      word-break: keep-all;
+    }
+
+    .status-list li::before,
+    .check-list li::before,
+    .charge-list li::before,
+    .order-list li::before {
+      position: absolute;
+      left: 13px;
+      top: 13px;
+      width: 19px;
+      height: 19px;
+      display: grid;
+      place-items: center;
+      border-radius: 5px;
+      color: #fff8e8;
+      background: var(--burgundy);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .status-list li::before { content: "•"; border-radius: 50%; }
+    .check-list li::before,
+    .charge-list li::before,
+    .order-list li::before { content: "✓"; }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .timeline li {
+      position: relative;
+      min-height: 56px;
+      padding: 10px 10px 10px 56px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--line);
+      font-weight: 750;
+      word-break: keep-all;
+    }
+
+    .timeline li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 12px;
+      top: 10px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff8e8;
+      background: var(--brown);
+      font: 900 15px/1 Georgia, serif;
+      box-shadow: 0 0 0 4px rgba(75,44,34,.08);
+    }
+
+    .quote-card {
+      position: relative;
+      margin: 4px 0 18px;
+      padding: 26px 18px;
+      border-radius: 17px;
+      border: 1px solid rgba(75,44,34,.18);
+      background: #fffdf7;
+      box-shadow: 0 12px 24px rgba(75,44,34,.1);
+      text-align: center;
+    }
+
+    .quote-card::before,
+    .quote-card::after {
+      position: absolute;
+      color: rgba(126,31,43,.16);
+      font: 900 46px/1 Georgia, serif;
+    }
+
+    .quote-card::before { content: "“"; left: 12px; top: 2px; }
+    .quote-card::after { content: "”"; right: 12px; bottom: -18px; }
+
+    .quote-card p {
+      margin: 0;
+      color: var(--brown);
+      font-size: 20px;
+      font-weight: 900;
+      word-break: keep-all;
+    }
+
+    .stamp {
+      display: inline-grid;
+      place-items: center;
+      min-width: 124px;
+      min-height: 50px;
+      margin: 0 auto 18px;
+      padding: 8px 14px;
+      border: 4px double var(--red);
+      border-radius: 9px;
+      color: var(--red);
+      font: 900 20px/1 "Courier New", monospace;
+      letter-spacing: 1px;
+      transform: rotate(-7deg);
+      text-align: center;
+      opacity: .92;
+      background: rgba(255,255,255,.12);
+      text-shadow: 1px 1px 0 rgba(255,255,255,.5);
+    }
+
+    .stamp.big {
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      font-size: 34px;
+      animation: stampDrop .7s cubic-bezier(.2,1.35,.48,1) both;
+    }
+
+    .analysis-table {
+      display: grid;
+      gap: 11px;
+    }
+
+    .analysis-row {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,255,255,.58);
+    }
+
+    .analysis-row strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--burgundy);
+      font-size: 13px;
+    }
+
+    .verdict-box {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .two-columns {
+      display: grid;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .mini-title {
+      margin: 0 0 8px;
+      color: var(--burgundy);
+      font-weight: 900;
+    }
+
+    .sentence {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      color: var(--brown);
+      background: rgba(210,162,75,.14);
+      border: 1px solid rgba(210,162,75,.35);
+      font-weight: 900;
+    }
+
+    .choice-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-radius: 17px;
+      color: var(--brown);
+      background: #fffaf0;
+      border: 1px solid rgba(75,44,34,.2);
+      box-shadow: 0 10px 20px rgba(75,44,34,.09);
+      font-size: 16px;
+      font-weight: 900;
+      text-align: left;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+    .choice-btn:active,
+    .choice-btn.selected {
+      transform: translateY(2px);
+      border-color: var(--burgundy);
+      background: #fff1d3;
+    }
+
+    .modal-result {
+      margin-top: 15px;
+      padding: 14px;
+      border-radius: 15px;
+      color: var(--burgundy);
+      background: rgba(126,31,43,.08);
+      font-weight: 900;
+      word-break: keep-all;
+    }
+
+    .ending {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .heart-field {
+      position: relative;
+      width: 180px;
+      height: 100px;
+      margin: 0 auto 8px;
+    }
+
+    .heart {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      transform: rotate(45deg);
+      background: var(--red);
+      opacity: .75;
+      animation: floatHeart 2.4s ease-in-out infinite;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: inherit;
+    }
+
+    .heart::before { left: -9px; top: 0; }
+    .heart::after { top: -9px; left: 0; }
+    .heart:nth-child(1) { left: 16px; top: 56px; animation-delay: 0s; }
+    .heart:nth-child(2) { left: 78px; top: 24px; width: 15px; height: 15px; animation-delay: .35s; background: var(--gold); }
+    .heart:nth-child(2)::before,
+    .heart:nth-child(2)::after { width: 15px; height: 15px; }
+    .heart:nth-child(2)::before { left: -7.5px; }
+    .heart:nth-child(2)::after { top: -7.5px; }
+    .heart:nth-child(3) { right: 20px; top: 62px; animation-delay: .7s; }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .primary-btn {
+      min-height: 56px;
+      padding: 15px 18px;
+      border-radius: 18px;
+      color: #fff9ee;
+      background: linear-gradient(135deg, var(--burgundy), #542018);
+      box-shadow: 0 14px 26px rgba(126,31,43,.24);
+      font-weight: 900;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .primary-btn:active {
+      transform: translateY(2px) scale(.99);
+      box-shadow: 0 8px 18px rgba(126,31,43,.2);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 22px;
+      background: rgba(35, 22, 17, .46);
+      z-index: 10;
+    }
+
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      width: min(100%, 360px);
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--paper);
+      border: 1px solid rgba(255,255,255,.72);
+      box-shadow: 0 26px 70px rgba(0,0,0,.28);
+      text-align: center;
+      animation: modalIn .25s ease both;
+    }
+
+    .modal p {
+      margin: 10px 0 18px;
+      color: var(--brown);
+      font-size: 20px;
+      font-weight: 900;
+      word-break: keep-all;
+    }
+
+    .modal-seal {
+      width: 52px;
+      height: 52px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 3px double var(--red);
+      color: var(--red);
+      font-weight: 900;
+      transform: rotate(-10deg);
+    }
+
+    @keyframes sceneIn {
+      from { opacity: 0; transform: translateX(18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pageFlip {
+      0% { transform: translateX(0) rotate(0); }
+      45% { transform: translateX(-8px) rotate(-1deg); }
+      100% { transform: translateX(0) rotate(0); }
+    }
+
+    @keyframes stampDrop {
+      0% { opacity: 0; transform: scale(1.7) rotate(-18deg); filter: blur(2px); }
+      62% { opacity: 1; transform: scale(.88) rotate(-8deg); }
+      100% { opacity: .94; transform: scale(1) rotate(-7deg); filter: blur(0); }
+    }
+
+    @keyframes floatHeart {
+      0%, 100% { transform: translateY(8px) rotate(45deg) scale(.92); opacity: .45; }
+      50% { transform: translateY(-12px) rotate(45deg) scale(1.08); opacity: .9; }
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(14px) scale(.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (min-width: 720px) {
+      body { padding: 32px; }
+      .case-card { min-height: 740px; }
+      .paper { padding: 32px 28px 24px; }
+      .two-columns { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 360px) {
+      body { padding: 10px; }
+      .case-card { padding: 12px; min-height: calc(100vh - 20px); }
+      .paper { padding: 22px 15px 16px; }
+      .file-row { grid-template-columns: 78px 1fr; }
+      .body-copy { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-live="polite">
+    <section class="case-card">
+      <div class="topbar">
+        <button class="back-btn" id="backBtn" type="button" aria-label="이전 화면으로 돌아가기">←</button>
+        <div class="dots" id="dots" aria-label="진행 단계"></div>
+        <div class="case-label" id="caseMiniLabel">CASE</div>
+      </div>
+      <article class="paper" id="paper">
+        <div class="scene active" id="scene"></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalText">
+    <div class="modal">
+      <div class="modal-seal">비밀</div>
+      <p id="modalText"></p>
+      <button class="primary-btn" id="modalClose" type="button">기록 봉인</button>
+    </div>
+  </div>
+
+  <script>
+    const CASE_CONFIG = {
+      caseNumber: "2026-0715",
+      caseName: "X 언급 사건",
+      incidentDate: "2026년 7월 15일",
+      victim: "정찬영",
+      suspect: "천예인",
+      finalSignature: "- 피의자 천예인 -",
+    };
+
+    const SCENES = [
+      {
+        type: "caseStart",
+        label: "CASE FILE",
+        title: "CASE FILE",
+        subtitle: "본 기록은 피해자의 화를 조금이라도 풀기 위해 작성되었습니다.",
+        button: "사건 기록 열람"
+      },
+      {
+        type: "parties",
+        label: "PERSONS",
+        title: "사건 당사자",
+        suspectStatus: [
+          "뒤늦은 상황 파악",
+          "강한 후회",
+          "어떻게 화를 풀어줘야 할지 몰라 위축됨",
+          "그래도 이번에는 가만히 있지 않기로 결정함"
+        ],
+        button: "혐의 확인"
+      },
+      {
+        type: "list",
+        label: "CHARGES",
+        title: "적용 혐의",
+        listClass: "charge-list",
+        items: [
+          "쓸데없는 X 언급",
+          "비교당하는 기분 들게 함",
+          "상대방이 대화를 그만하자고 했는데 계속 이어감",
+          "비꼬는 표현 사용",
+          "상대방이 화난 핵심 이유를 늦게 알아챔",
+        ],
+        note: "피의자는 위 혐의를 모두 인정하고 있습니다.",
+        button: "수사 기록 확인"
+      },
+      {
+        type: "timeline",
+        label: "REPORT",
+        title: "사건 경위",
+        items: [
+          "피해자가 좋아하는 게임 캐릭터 이야기를 꺼냄",
+          "피의자가 해당 캐릭터와 오타쿠 문화에 대한 불편함을 강하게 표현함",
+          "논쟁이 길어지며 취미 생활 간섭 문제로 갈등이 커짐",
+          "피의자가 X 이야기를 예시로 꺼냄",
+          "피해자는 비교당했다고 느끼며 크게 화남",
+          "피의자는 뒤늦게 X 언급이 가장 큰 문제였다는 것을 깨달음"
+        ],
+        button: "증거물 확인"
+      },
+      {
+        type: "evidence",
+        label: "EVIDENCE",
+        title: "증거물 A",
+        quote: "X는 오타쿠여도 안 그랬는데…",
+        stamp: "부적절한 발언",
+        opinionTitle: "피의자 의견",
+        opinion: "자신이 느낀 감정을 설명하려고 꺼낸 말이었지만, 상대방 입장에서는 분명 비교처럼 들릴 수 있는 말이었습니다.",
+        note: "잘못을 깨닫고 반성하고 있습니다.",
+        button: "피의자 진술 확인"
+      },
+      {
+        type: "text",
+        label: "STATEMENT",
+        title: "피의자 최종 진술",
+        body: "사실 처음에는 먼저 얘기하고 있던 문제 때문에 화난 줄 알았어.\n\n그런데 나중에 생각해 보니 찬영이가 가장 상처받은 이유는 내가 X 이야기를 꺼내서 비교당하는 기분이 들게 했기 때문이었던 것 같아.\n\n비교하려던 의도는 아니었지만, 그렇게 들릴 말을 한 건 100% 내 잘못이야.\n\n찬영이가 왜 화났는지 바로 알아차리지 못한 것도 미안해.\n\n다시는 이런 일 없도록 할게.",
+        button: "추가 진술"
+      },
+      {
+        type: "list",
+        label: "PATTERN",
+        title: "행동 패턴 분석",
+         listClass: "charge-list",
+        items: [
+          "피의자는 자신이 잘못했다고 느끼면 더 위축되고 머리가 하얘진다.",
+          "괜한 행동을 했다가 화를 더 키울까봐 아무것도 못하고 시간이 지나기만을 기다린다.",
+          "하지만 피해자 입장에서는 피의자가 화를 풀어주려는 노력을 하지 않는 것처럼 느꼈을 것이다.",
+        ],
+        note: "이번에는 피의자가 상황을 최대한 바꾸고자 하여 이 사이트를 만들었습니다.",
+        button: "사건의 배경 확인"
+      },
+      {
+        type: "list",
+        label: "PROMISE",
+        title: "재발 방지 대책",
+        listClass: "check-list",
+        items: [
+          "내 감정을 설명할 때 X나 다른 사람을 예로 들지 않기",
+          "“질투난다”, “불편하다”, “괴롭다”처럼 내 감정을 먼저 말하기",
+          "상대방이 대화를 그만하자고 하면 일단 멈추기",
+          "상대방이 왜 화났는지 추측만 하지 말고 직접 확인하기",
+          "내가 잘못했을 때 눈치만 보지 않고 먼저 화해하려 노력하기",
+          "상대방 취미를 통제하기보다 내 앞에서 지켜줬으면 하는 선을 부탁하기"
+        ],
+        note: "피의자는 위 조항을 성실히 이행할 것을 약속합니다.",
+        button: "최종 판결"
+      },
+      {
+        type: "verdict",
+        label: "VERDICT",
+        title: "최종 판결",
+        stamp: "유죄",
+        crimes: [
+          "X 언급죄",
+          "비교당하게 한 죄",
+          "화난 이유 늦게 알아챈 죄",
+        ],
+        sentence: "평생 정찬영 사랑하기",
+        orders: [
+          "다시는 X와 비교하지 않기",
+          "다음에는 도망가지 않고 먼저 다가가기",
+          "내 감정을 더 솔직하고 정확하게 말하기"
+        ],
+        note: "피의자는 판결에 이의가 없습니다.",
+        button: "피해자 선택"
+      },
+      {
+        type: "choice",
+        label: "CHOICE",
+        title: "피해자 찬영은 어떤 판결을 내리시겠습니까?",
+        choices: [
+          ["❤️ 집행유예 승인", "감사합니다. 피의자는 평생 감사하며 살겠습니다."],
+          ["🥲 아직 조금 더 생각해보기", "충분히 그럴 수 있습니다. 그래도 끝까지 기다리고 노력하겠습니다."],
+          ["😤 직접 와서 애교 심사", "피의자는 즉시 현장 출석 준비를 시작합니다."]
+        ],
+        button: "마지막 기록 확인"
+      },
+      {
+        type: "text",
+        label: "CLOSING",
+        title: "사건 종결 요청",
+        body: "이번에는 내가 정말 큰 실수를 했어.\n\n상처 주려던 의도는 아니었지만, 상처가 된 말은 분명 내 책임이야.\n\n찬영이가 왜 화났는지도 뒤늦게 알아차려서 미안해.\n\n그래도 우리 관계를 유지하기 위해 이번에는 가만히 있지 않고 화를 풀어주고 싶었어.\n\n항상 사랑해용..",
+        signature: CASE_CONFIG.finalSignature,
+        button: "사건 종결"
+      },
+      {
+        type: "ending",
+        label: "CLOSED",
+        title: "CASE CLOSED",
+        body: "고마워.\n다음에는 더 잘 말하고,\n더 빨리 다가갈게",
+      }
+    ];
+
+    const sceneEl = document.getElementById("scene");
+    const dotsEl = document.getElementById("dots");
+    const backBtn = document.getElementById("backBtn");
+    const paperEl = document.getElementById("paper");
+    const caseMiniLabel = document.getElementById("caseMiniLabel");
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalText = document.getElementById("modalText");
+    const modalClose = document.getElementById("modalClose");
+    let currentIndex = 0;
+    let selectedChoice = "";
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderDots() {
+      dotsEl.innerHTML = SCENES.map((_, index) => (
+        `<span class="dot ${index === currentIndex ? "active" : ""}" aria-hidden="true"></span>`
+      )).join("");
+    }
+
+    function header(scene) {
+      return `
+        <span class="kicker">${escapeHtml(scene.label || "RECORD")}</span>
+        <h2 class="${scene.type === "ending" ? "type-title" : ""}">${escapeHtml(scene.title)}</h2>
+      `;
+    }
+
+    function renderList(items, className) {
+      return `<ul class="${className}">${items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+    }
+
+    function renderScene(scene) {
+      if (scene.type === "caseStart") {
+        return `
+          <div>
+            <span class="kicker">PRIVATE REPORT</span>
+            <h1>${escapeHtml(scene.title)}</h1>
+            <p class="subtitle">${escapeHtml(CASE_CONFIG.caseName)}</p>
+            <dl class="file-grid">
+              <div class="file-row"><dt>사건번호</dt><dd>${escapeHtml(CASE_CONFIG.caseNumber)}</dd></div>
+              <div class="file-row"><dt>사건명</dt><dd>${escapeHtml(CASE_CONFIG.caseName)}</dd></div>
+              <div class="file-row"><dt>발생일</dt><dd>${escapeHtml(CASE_CONFIG.incidentDate)}</dd></div>
+            </dl>
+            <p class="note">${escapeHtml(scene.subtitle)}</p>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "parties") {
+        return `
+          ${header(scene)}
+          <div class="content">
+            <dl class="file-grid">
+              <div class="file-row"><dt>피해자</dt><dd>${escapeHtml(CASE_CONFIG.victim)}</dd></div>
+              <div class="file-row"><dt>피의자</dt><dd>${escapeHtml(CASE_CONFIG.suspect)}</dd></div>
+            </dl>
+            <p class="mini-title" style="margin-top:18px;">피의자 상태</p>
+            ${renderList(scene.suspectStatus, "status-list")}
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "list") {
+        return `
+          ${header(scene)}
+          <div class="content">
+            ${renderList(scene.items, scene.listClass)}
+            <p class="note">${escapeHtml(scene.note)}</p>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "timeline") {
+        return `
+          ${header(scene)}
+          <div class="content">
+            <ol class="timeline">${scene.items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "evidence") {
+        return `
+          ${header(scene)}
+          <div class="content">
+            <div class="quote-card"><p>${escapeHtml(scene.quote)}</p></div>
+            <div class="stamp">${escapeHtml(scene.stamp)}</div>
+            <p class="mini-title">${escapeHtml(scene.opinionTitle)}</p>
+            <p class="body-copy">${escapeHtml(scene.opinion)}</p>
+            <p class="note">${escapeHtml(scene.note)}</p>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "analysis") {
+        return `
+          ${header(scene)}
+          <div class="content analysis-table">
+            ${scene.rows.map(([title, text]) => `
+              <div class="analysis-row">
+                <strong>${escapeHtml(title)}</strong>
+                <p class="body-copy">${escapeHtml(text)}</p>
+              </div>
+            `).join("")}
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "text") {
+        return `
+          ${header(scene)}
+          <div class="content">
+            <p class="body-copy">${escapeHtml(scene.body)}</p>
+            ${scene.signature ? `<p class="note" style="text-align:right;">${escapeHtml(scene.signature)}</p>` : ""}
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "verdict") {
+        return `
+          ${header(scene)}
+          <div class="content verdict-box">
+            <div class="stamp big">${escapeHtml(scene.stamp)}</div>
+            <div class="two-columns">
+              <div>
+                <p class="mini-title">죄명</p>
+                ${renderList(scene.crimes, "charge-list")}
+              </div>
+              <div>
+                <p class="mini-title">추가 명령</p>
+                ${renderList(scene.orders, "order-list")}
+              </div>
+            </div>
+            <div class="sentence">형량: ${escapeHtml(scene.sentence)}</div>
+            <p class="note">${escapeHtml(scene.note)}</p>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "choice") {
+        return `
+          ${header(scene)}
+          <div class="content choice-stack">
+            ${scene.choices.map(([label, result], index) => `
+              <button class="choice-btn" type="button" data-choice="${index}" data-result="${escapeHtml(result)}">${escapeHtml(label)}</button>
+            `).join("")}
+            <div class="modal-result" id="choiceResult" ${selectedChoice ? "" : "hidden"}>${escapeHtml(selectedChoice)}</div>
+          </div>
+          ${actionButton(scene.button)}
+        `;
+      }
+
+      if (scene.type === "ending") {
+        return `
+          <div class="ending scene active">
+            <div class="heart-field" aria-hidden="true">
+              <span class="heart"></span>
+              <span class="heart"></span>
+              <span class="heart"></span>
+            </div>
+            <div class="stamp big">종결</div>
+            <h1>${escapeHtml(scene.title)}</h1>
+            <p class="body-copy" style="margin-top:20px; text-align:center;">${escapeHtml(scene.body)}</p>
+            </div>
+        `;
+      }
+
+      return "";
+    }
+
+    function actionButton(label) {
+      return `<div class="actions"><button class="primary-btn" type="button" data-next>${escapeHtml(label)}</button></div>`;
+    }
+
+    function goTo(index) {
+      currentIndex = Math.max(0, Math.min(index, SCENES.length - 1));
+      const scene = SCENES[currentIndex];
+      sceneEl.className = `scene active ${scene.type === "ending" ? "ending" : ""}`;
+      sceneEl.innerHTML = renderScene(scene);
+      caseMiniLabel.textContent = scene.label || "CASE";
+      backBtn.disabled = currentIndex === 0;
+      renderDots();
+      paperEl.classList.remove("flip");
+      void paperEl.offsetWidth;
+      paperEl.classList.add("flip");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function nextScene() {
+      goTo(currentIndex + 1);
+    }
+
+    sceneEl.addEventListener("click", event => {
+      const nextButton = event.target.closest("[data-next]");
+      const choiceButton = event.target.closest("[data-choice]");
+      const secretButton = event.target.closest("#secretBtn");
+
+      if (choiceButton) {
+        selectedChoice = choiceButton.dataset.result;
+        sceneEl.querySelectorAll(".choice-btn").forEach(btn => btn.classList.remove("selected"));
+        choiceButton.classList.add("selected");
+        const resultEl = document.getElementById("choiceResult");
+        resultEl.hidden = false;
+        resultEl.textContent = selectedChoice;
+      }
+
+      if (nextButton) nextScene();
+      if (secretButton) openModal(CASE_CONFIG.secretMessage);
+    });
+
+    backBtn.addEventListener("click", () => goTo(currentIndex - 1));
+
+    function openModal(message) {
+      modalText.textContent = message;
+      modalBackdrop.classList.add("open");
+      modalClose.focus();
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("open");
+    }
+
+    modalClose.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", event => {
+      if (event.target === modalBackdrop) closeModal();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeModal();
+    });
+
+    goTo(0);
+  </script>
+</body>
+</html>
